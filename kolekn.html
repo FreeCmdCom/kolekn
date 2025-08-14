@@ -408,10 +408,27 @@
                 e.stopPropagation();
                 closeAllMenus();
                 
-                menu.style.left = `${x}%`;
-                menu.style.top = `${y + 2}%`;
+                // Calculate position to ensure menu stays on screen
+                const radarRect = radar.getBoundingClientRect();
+                const nodeRect = node.getBoundingClientRect();
+                
+                let menuLeft = nodeRect.left - radarRect.left;
+                let menuTop = nodeRect.bottom - radarRect.top + 5;
+                
+                // Adjust if menu would go off right edge
+                if (menuLeft + 200 > radarRect.width) {
+                    menuLeft = radarRect.width - 200;
+                }
+                
+                // Adjust if menu would go off bottom edge
+                if (menuTop + 150 > radarRect.height) {
+                    menuTop = nodeRect.top - radarRect.top - 150;
+                }
+                
+                menu.style.left = `${menuLeft}px`;
+                menu.style.top = `${menuTop}px`;
                 menu.style.display = 'block';
-                node.appendChild(menu);
+                radar.appendChild(menu); // Append to radar instead of node
             });
             
             radar.appendChild(node);
@@ -449,34 +466,42 @@
         }
         
         function banNode(button) {
-            const node = button.closest('.node-menu').parentElement;
-            node.style.backgroundColor = '#f00';
-            setTimeout(() => {
-                node.style.display = 'none';
-            }, 1000);
+            const menu = button.closest('.node-menu');
+            const node = nodes.find(n => n.menu === menu)?.element;
             
-            bansCount++;
-            addChatMessage("SYSTEM", `Node ${node.info.ip} (${node.info.device}) has been BANNED from network`, true);
-            
-            // Escalate panic based on bans count
-            if (bansCount === 3) {
-                startQuestions();
-            } else if (bansCount > 3) {
-                increasePanic();
+            if (node) {
+                node.style.backgroundColor = '#f00';
+                setTimeout(() => {
+                    node.style.display = 'none';
+                }, 1000);
+                
+                bansCount++;
+                addChatMessage("SYSTEM", `Node ${menu.querySelector('.node-info').textContent.match(/IP: (\d+\.\d+\.\d+\.\d+)/)[1]} has been BANNED from network`, true);
+                
+                // Escalate panic based on bans count
+                if (bansCount === 3) {
+                    startQuestions();
+                } else if (bansCount > 3) {
+                    increasePanic();
+                }
             }
         }
         
         function kickNode(button) {
-            const node = button.closest('.node-menu').parentElement;
-            node.style.backgroundColor = '#ff0';
-            setTimeout(() => {
-                const x = Math.random() * 90 + 5;
-                const y = Math.random() * 90 + 5;
-                node.style.left = `${x}%`;
-                node.style.top = `${y}%`;
-                node.style.backgroundColor = '#0f0';
-            }, 1000);
-            addChatMessage("SYSTEM", `Node ${node.info.ip} (${node.info.device}) has been KICKED to new location`, true);
+            const menu = button.closest('.node-menu');
+            const node = nodes.find(n => n.menu === menu)?.element;
+            
+            if (node) {
+                node.style.backgroundColor = '#ff0';
+                setTimeout(() => {
+                    const x = Math.random() * 90 + 5;
+                    const y = Math.random() * 90 + 5;
+                    node.style.left = `${x}%`;
+                    node.style.top = `${y}%`;
+                    node.style.backgroundColor = '#0f0';
+                }, 1000);
+                addChatMessage("SYSTEM", `Node ${menu.querySelector('.node-info').textContent.match(/IP: (\d+\.\d+\.\d+\.\d+)/)[1]} has been KICKED to new location`, true);
+            }
         }
         
         function closeMenu(button) {
