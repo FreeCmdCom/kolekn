@@ -3,714 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DARKNET MONITORING RADAR</title>
+    <title>Shark0Hub - Rust Clan Leader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #000;
-            --text: #0f0;
-            --accent: #f00;
-            --glow: 0 0 5px #0f0;
-            --chat-bg: #0a0a0a;
-        }
-        
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            text-shadow: var(--glow);
-            height: 100vh;
-            display: grid;
-            grid-template-columns: 70% 30%;
+            box-sizing: border-box;
+            font-family: 'Oxanium', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 1000;
-            opacity: 1;
-            transition: opacity 2s ease-out;
+
+        @import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700&display=swap');
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a, #0a0a0a);
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(139, 0, 0, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(205, 133, 63, 0.1) 0%, transparent 40%);
         }
-        
-        #skull {
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            white-space: pre;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 40px 0;
             text-align: center;
-            font-size: 10px;
-            line-height: 10px;
+            animation: fadeIn 1.5s ease-out;
+            border-bottom: 2px solid #8B4513;
+            background: rgba(20, 20, 20, 0.8);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #8B4513, #CD853F, #D2691E);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #CD853F;
             margin-bottom: 20px;
+            font-style: italic;
         }
-        
-        #loading-text {
-            color: #0f0;
-            font-family: 'Courier New', monospace;
-            text-align: center;
-        }
-        
-        #radar-container {
-            position: relative;
-            border-right: 1px solid #333;
-            overflow: hidden;
-            opacity: 0;
-            transition: opacity 1s ease-in;
-        }
-        
-        #radar {
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #001100 0%, #000 100%);
-        }
-        
-        #chat-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            border-left: 1px solid #333;
-            background: var(--chat-bg);
-            opacity: 0;
-            transition: opacity 1s ease-in;
-        }
-        
-        #chat-header {
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            text-align: center;
+
+        .rust-logo {
+            color: #D2691E;
             font-weight: bold;
         }
-        
-        #chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding: 10px;
+
+        .hero {
+            text-align: center;
+            padding: 60px 0;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            margin: 40px 0;
+            animation: slideUp 1.2s ease-out;
+            border: 1px solid #8B4513;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
         }
-        
-        .chat-message {
-            margin-bottom: 10px;
-            line-height: 1.4;
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
         }
-        
-        .node {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #0f0;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s;
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            color: #d0d0d0;
         }
-        
-        .node:hover {
-            transform: scale(1.5);
-            box-shadow: 0 0 10px #0f0;
-        }
-        
-        .node-menu {
-            position: absolute;
-            background: #111;
-            border: 1px solid #0f0;
-            padding: 10px;
-            z-index: 100;
-            display: none;
-            width: 200px;
-        }
-        
-        .node-info {
-            margin-bottom: 10px;
-        }
-        
-        .node-actions {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .node-actions button {
-            background: #111;
-            color: #0f0;
-            border: 1px solid #0f0;
-            padding: 3px 6px;
-            cursor: pointer;
-        }
-        
-        .node-actions button:hover {
-            background: #0f0;
-            color: #000;
-        }
-        
-        .blink {
-            animation: blink 1s step-end infinite;
-        }
-        
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #111;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #0f0;
-        }
-        
-        .caps {
+
+        .telegram-link {
+            display: inline-block;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .error {
-            color: #f00;
+
+        .telegram-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.6);
+            background: linear-gradient(to right, #A0522D, #8B4513);
         }
-        
-        .warning {
-            color: #ff0;
+
+        .telegram-link i {
+            margin-right: 10px;
         }
-        
-        .russian {
-            color: #0af;
+
+        .content {
+            padding: 60px 0;
         }
-        
-        .panic {
-            animation: panic 0.1s linear infinite;
+
+        .section {
+            background: rgba(20, 20, 20, 0.7);
+            border-radius: 10px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 1.5s ease-out;
+            animation-fill-mode: both;
+            border: 1px solid #8B4513;
         }
-        
-        @keyframes panic {
-            0% { color: #f00; text-shadow: 0 0 5px #f00; }
-            50% { color: #ff0; text-shadow: 0 0 5px #ff0; }
-            100% { color: #f00; text-shadow: 0 0 5px #f00; }
+
+        .section:nth-child(1) { animation-delay: 0.3s; }
+        .section:nth-child(2) { animation-delay: 0.6s; }
+        .section:nth-child(3) { animation-delay: 0.9s; }
+        .section:nth-child(4) { animation-delay: 1.2s; }
+
+        .section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            color: #CD853F;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #8B4513;
+            padding-bottom: 10px;
+        }
+
+        .section h2 i {
+            margin-right: 15px;
+            background: linear-gradient(to right, #CD853F, #8B4513);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+
+        .highlight {
+            color: #CD853F;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            margin: 10px;
+            flex: 1;
+            min-width: 200px;
+            transition: transform 0.3s ease;
+            border: 1px solid #8B4513;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #CD853F;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #d0d0d0;
+        }
+
+        .clan-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature {
+            background: rgba(30, 30, 30, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #8B4513;
+        }
+
+        .feature h3 {
+            color: #CD853F;
+            margin-bottom: 15px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #d0d0d0;
+            border-top: 2px solid #8B4513;
+            background: rgba(20, 20, 20, 0.8);
+            margin-top: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .logo { font-size: 3rem; }
+            .hero h1 { font-size: 2.2rem; }
+            .section { padding: 25px; }
+            .stats { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-screen">
-        <div id="skull">
-                         ..-:"''         ''"-..
-                      .-'                      '-.
-                    .'              .     .       '.
-                  .'   .          .    .      .    .''.
-                .'  .    .       .   .   .     .   . ..:.
-              .' .   . .  .       .   .   ..  .   . ....::.
-             ..   .   .      .  .    .     .  ..  . ....:IA.
-            .:  .   .    .    .  .  .    .. .  .. .. ....:IA.
-           .: .   .   ..   .    .     . . .. . ... ....:.:VHA.
-           '..  .  .. .   .       .  . .. . .. . .....:.::IHHB.
-          .:. .  . .  . .   .  .  . . . ...:.:... .......:HIHMM.
-         .:.... .   . ."::"'.. .   .  . .:.:.:II;,. .. ..:IHIMMA
-         ':.:..  ..::IHHHHHI::. . .  ...:.::::.,,,. . ....VIMMHM
-        .:::I. .AHHHHHHHHHHAI::. .:...,:IIHHHHHHMMMHHL:. . VMMMM
-       .:.:V.:IVHHHHHHHMHMHHH::..:" .:HIHHHHHHHHHHHHHMHHA. .VMMM.
-       :..V.:IVHHHHHMMHHHHHHHB... . .:VPHHMHHHMMHHHHHHHHHAI.:VMMI
-       ::V..:VIHHHHHHMMMHHHHHH. .   .I":IIMHHMMHHHHHHHHHHHAPI:WMM
-       ::". .:.HHHHHHHHMMHHHHHI.  . .:..I:MHMMHHHHHHHHHMHV:':H:WM
-       :: . :.::IIHHHHHHMMHHHHV  .ABA.:.:IMHMHMMMHMHHHHV:'. .IHWW
-       '.  ..:..:.:IHHHHHMMHV" .AVMHMA.:.'VHMMMMHHHHHV:' .  :IHWV
-        :.  .:...:".:.:TPP"   .AVMMHMMA.:. "VMMHHHP.:... .. :IVAI
-       .:.   '... .:"'   .   ..HMMMHMMMA::. ."VHHI:::....  .:IHW'
-       ...  .  . ..:IIPPIH: ..HMMMI.MMMV:I:.  .:ILLH:.. ...:I:IM
-     : .   .'"' .:.V". .. .  :HMMM:IMMMI::I. ..:HHIIPPHI::'.P:HM.
-     :.  .  .  .. ..:.. .    :AMMM IMMMM..:...:IV":T::I::.".:IHIMA
-     'V:.. .. . .. .  .  .   'VMMV..VMMV :....:V:.:..:....::IHHHMH
-       "IHH:.II:.. .:. .  . . . " :HB"" . . ..PI:.::.:::..:IHHMMV"
-        :IP""HHII:.  .  .    . . .'V:. . . ..:IH:.:.::IHIHHMMMMM"
-        :V:. VIMA:I..  .     .  . .. . .  .:.I:I:..:IHHHHMMHHMMM
-        :"VI:.VWMA::. .:      .   .. .:. ..:.I::.:IVHHHMMMHMMMMI
-        :."VIIHHMMA:.  .   .   .:  .:.. . .:.II:I:AMMMMMMHMMMMMI
-        :..VIHIHMMMI...::.,:.,:!"I:!"I!"I!"V:AI:VAMMMMMMHMMMMMM'
-        ':.:HIHIMHHA:"!!"I.:AXXXVVXXXXXXXA:."HPHIMMMMHHMHMMMMMV
-          V:H:I:MA:W'I :AXXXIXII:IIIISSSSSSXXA.I.VMMMHMHMMMMMM
-            'I::IVA ASSSSXSSSSBBSBMBSSSSSSBBMMMBS.VVMMHIMM'"'
-             I:: VPAIMSSSSSSSSSBSSSMMBSSSBBMMMMXXI:MMHIMMI
-            .I::. "H:XIIXBBMMMMMMMMMMMMMMMMMBXIXXMMPHIIMM'
-            :::I.  ':XSSXXIIIIXSSBMBSSXXXIIIXXSMMAMI:.IMM
-            :::I:.  .VSSSSSISISISSSBII:ISSSSBMMB:MI:..:MM
-            ::.I:.  ':"SSSSSSSISISSXIIXSSSSBMMB:AHI:..MMM.
-            ::.I:. . ..:"BBSSSSSSSSSSSSBBBMMMB:AHHI::.HMMI
-            :..::.  . ..::":BBBBBSSBBBMMMB:MMMMHHII::IHHMI
-            ':.I:... ....:IHHHHHMMMMMMMMMMMMMMMHHIIIIHMMV"
-              "V:. ..:...:.IHHHMMMMMMMMMMMMMMMMHHHMHHMHP'
-               ':. .:::.:.::III::IHHHHMMMMMHMHMMHHHHM"
-                 "::....::.:::..:..::IIIIIHHHHMMMHHMV"
-                   "::.::.. .. .  ...:::IIHHMMMMHMV"
-                     "V::... . .I::IHHMMV"'
-                       '"VHVHHHAHHHHMMV:"'
+    <div class="container">
+        <header>
+            <div class="logo">SHARK0HUB</div>
+            <div class="tagline">Leading the largest <span class="rust-logo">RUST</span> clan with over 10 million players</div>
+        </header>
+
+        <div class="hero">
+            <h1>DOMINATE THE WASELAND</h1>
+            <p>Join the most powerful clan in Rust history, led by Shark0Hub - a visionary leader who built an empire from scratch</p>
+            <a href="https://t.me/shark0hub" class="telegram-link" target="_blank">
+                <i class="fab fa-telegram"></i> Join our Telegram
+            </a>
         </div>
-        <div id="loading-text">INITIALIZING DARKNET MONITORING SYSTEM...</div>
-    </div>
-    
-    <div id="radar-container">
-        <div id="radar"></div>
-    </div>
-    
-    <div id="chat-container">
-        <div id="chat-header">
-            DARKNET MONITORING CHAT
+
+        <div class="content">
+            <div class="section">
+                <h2><i class="fas fa-crown"></i> About Shark0Hub</h2>
+                <p>Shark0Hub is the founder and leader of the largest clan in <span class="highlight">Rust</span>, with over 10 million active members worldwide. What started as a small group of dedicated players has grown into a dominant force that controls territories on thousands of servers.</p>
+                <p>Under Shark0Hub's leadership, the clan has developed innovative strategies, advanced base designs, and tactical approaches that have revolutionized how Rust is played. His ability to organize and manage large groups of players sets him apart as one of the most influential figures in the Rust community.</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-users"></i> The Clan Empire</h2>
+                <p>With over <span class="highlight">10 million members</span>, our clan has established itself as the most powerful force in the Rust universe. We maintain presence on all major servers and have developed sophisticated systems for resource management, defense, and expansion.</p>
+                
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-number">10M+</div>
+                        <div class="stat-label">Active Members</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">5.2K</div>
+                        <div class="stat-label">Controlled Servers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                </div>
+
+                <div class="clan-features">
+                    <div class="feature">
+                        <h3>Advanced Training Programs</h3>
+                        <p>Our clan offers comprehensive training for new recruits, covering everything from basic survival to advanced raiding techniques and base design.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Resource Network</h3>
+                        <p>We've established an efficient resource collection and distribution system that ensures all clan members are well-equipped.</p>
+                    </div>
+                    <div class="feature">
+                        <h3>Strategic Operations</h3>
+                        <p>Our tactical team develops sophisticated strategies for server domination, with customized approaches for different server environments.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-calendar-alt"></i> Events & Activities</h2>
+                <p>Our clan regularly organizes events to keep the community engaged and strengthen our bonds:</p>
+                <p>• <span class="highlight">Weekly Raids:</span> Organized attacks on high-value targets with strategic planning and execution</p>
+                <p>• <span class="highlight">Building Contests:</span> Competitions for the most innovative and impenetrable base designs</p>
+                <p>• <span class="highlight">Training Sessions:</span> Regular workshops to improve PVP skills, farming efficiency, and tactical thinking</p>
+                <p>• <span class="highlight">Inter-Clan Tournaments:</span> Competitive events between different divisions of our clan</p>
+                <p>• <span class="highlight">Resource Challenges:</span> Events focused on gathering and stockpiling resources most efficiently</p>
+            </div>
+
+            <div class="section">
+                <h2><i class="fas fa-id-card-alt"></i> Join Our Community</h2>
+                <p>Becoming part of our Rust clan means joining a well-organized community with structured leadership, clear goals, and supportive members. We welcome players of all skill levels who are willing to contribute to our collective success.</p>
+                <p>Requirements for joining:</p>
+                <p>• Active Rust player with at least 100 hours of gameplay<br>
+                   • Willingness to follow clan strategies and commands<br>
+                   • Team-oriented mindset and collaborative attitude<br>
+                   • Readiness to participate in clan events and activities<br>
+                   • Respect for other clan members and adherence to our code of conduct</p>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="https://t.me/shark0hub" class="telegram-link" target="_blank">
+                        <i class="fab fa-telegram"></i> Contact us on Telegram
+                    </a>
+                </div>
+            </div>
         </div>
-        <div id="chat-messages"></div>
+
+        <footer>
+            <p>© 2023 Shark0Hub Rust Clan | Official Website</p>
+            <p>This website is not affiliated with Facepunch Studios or the Rust game</p>
+        </footer>
     </div>
 
     <script>
-        // ===== GAME STATE =====
-        let bansCount = 0;
-        let panicLevel = 0;
-        let isPanicMode = false;
-        
-        // ===== INITIALIZATION =====
-        const nodes = [];
-        const users = [
-            "Agent_K", "Ghost", "NullByte", "Overlord", "Phantom", 
-            "Rogue", "Shadow", "Spectre", "Virus", "ZeroCool",
-            "KiberBaron", "DarkLord", "Neo", "Trinity", "Morpheus",
-            "CryptoKing", "Anon", "Root", "Admin", "SysOp"
-        ];
-        const devices = [
-            "Router", "Server", "Mainframe", "Terminal", "Satellite", 
-            "Drone", "Sensor", "Node", "Hub", "Relay",
-            "Firewall", "Proxy", "Tor Node", "I2P Router", "VPN Cluster",
-            "Database", "Switch", "Gateway", "Bridge", "Repeater"
-        ];
-        const problems = [
-            // English problems
-            "Device keeps shutting down randomly",
-            "System freezing every 20 minutes",
-            "CPU overheating to critical levels",
-            "Memory leaks detected",
-            "Network latency spikes",
-            "Unauthorized access attempts",
-            "Data corruption detected",
-            "Hardware failure imminent",
-            "Firmware needs urgent update",
-            "Security breach detected",
-            "Strange noises from hardware",
-            "Unexpected reboots occurring",
-            "Performance degradation noticed",
-            "Strange network traffic patterns",
-            "Device not responding to ping",
-            "Configuration keeps resetting",
-            "High packet loss detected",
-            "SSL certificate expired",
-            "DNS resolution failures",
-            "Port scanning detected",
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('.telegram-link');
+            const statItems = document.querySelectorAll('.stat-item');
             
-            // Russian problems
-            "Устройство самопроизвольно выключается",
-            "Система зависает каждые 30 минут",
-            "Критический перегрев процессора",
-            "Обнаружены утечки памяти",
-            "Скачки задержки в сети",
-            "Обнаружены попытки несанкционированного доступа",
-            "Повреждение данных",
-            "Скоро произойдет отказ оборудования",
-            "Требуется срочное обновление прошивки",
-            "Обнаружено нарушение безопасности",
-            "Странные шумы из оборудования",
-            "Неожиданные перезагрузки",
-            "Заметное снижение производительности",
-            "Странные паттерны сетевого трафика",
-            "Устройство не отвечает на пинг",
-            "Конфигурация постоянно сбрасывается",
-            "Обнаружены большие потери пакетов",
-            "SSL сертификат просрочен",
-            "Ошибки разрешения DNS",
-            "Обнаружено сканирование портов"
-        ];
-        
-        // ===== LOADING SCREEN =====
-        function initSystem() {
-            const loadingScreen = document.getElementById('loading-screen');
-            const radarContainer = document.getElementById('radar-container');
-            const chatContainer = document.getElementById('chat-container');
-            
-            // Simulate system loading
-            setTimeout(() => {
-                document.getElementById('loading-text').textContent = "ACCESSING DARKNET NODES...";
-            }, 1500);
-            
-            setTimeout(() => {
-                document.getElementById('loading-text').textContent = "ESTABLISHING SECURE CONNECTIONS...";
-            }, 3000);
-            
-            setTimeout(() => {
-                document.getElementById('loading-text').textContent = "LOADING MONITORING MODULES...";
-            }, 4500);
-            
-            // After loading complete
-            setTimeout(() => {
-                loadingScreen.style.opacity = '0';
+            links.forEach(link => {
+                link.addEventListener('mouseover', () => {
+                    link.style.background = 'linear-gradient(to right, #A0522D, #8B4513)';
+                });
                 
-                setTimeout(() => {
-                    loadingScreen.style.display = 'none';
-                    radarContainer.style.opacity = '1';
-                    chatContainer.style.opacity = '1';
-                    startSystem();
-                }, 2000);
-            }, 6000);
-        }
-        
-        // ===== NODE MANAGEMENT =====
-        function createNode() {
-            const radar = document.getElementById('radar');
-            const node = document.createElement('div');
-            node.className = 'node';
-            
-            // Random position
-            const x = Math.random() * 90 + 5;
-            const y = Math.random() * 90 + 5;
-            
-            node.style.left = `${x}%`;
-            node.style.top = `${y}%`;
-            
-            // Create menu
-            const menu = document.createElement('div');
-            menu.className = 'node-menu';
-            
-            // Generate random node info
-            const username = users[Math.floor(Math.random() * users.length)];
-            const ip = `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`;
-            const password = generatePassword();
-            const device = devices[Math.floor(Math.random() * devices.length)];
-            const status = Math.random() > 0.3 ? "Online" : "Offline";
-            const uptime = `${Math.floor(Math.random() * 30)}d ${Math.floor(Math.random() * 24)}h ${Math.floor(Math.random() * 60)}m`;
-            
-            menu.innerHTML = `
-                <div class="node-info">
-                    <strong>NODE INFO</strong><br>
-                    User: ${username}<br>
-                    IP: ${ip}<br>
-                    Password: ${password}<br>
-                    Device: ${device}<br>
-                    Status: <span class="${status === 'Online' ? 'warning' : 'error'}">${status}</span><br>
-                    Uptime: ${uptime}<br>
-                    Last ping: ${Math.floor(Math.random() * 500)}ms
-                </div>
-                <div class="node-actions">
-                    <button onclick="banNode(this)">BAN</button>
-                    <button onclick="kickNode(this)">KICK</button>
-                    <button onclick="closeMenu(this)">CLOSE</button>
-                </div>
-            `;
-            
-            // Add event listeners
-            node.addEventListener('click', (e) => {
-                e.stopPropagation();
-                closeAllMenus();
-                
-                // Calculate position to ensure menu stays on screen
-                const radarRect = radar.getBoundingClientRect();
-                const nodeRect = node.getBoundingClientRect();
-                
-                let menuLeft = nodeRect.left - radarRect.left;
-                let menuTop = nodeRect.bottom - radarRect.top + 5;
-                
-                // Adjust if menu would go off right edge
-                if (menuLeft + 200 > radarRect.width) {
-                    menuLeft = radarRect.width - 200;
-                }
-                
-                // Adjust if menu would go off bottom edge
-                if (menuTop + 150 > radarRect.height) {
-                    menuTop = nodeRect.top - radarRect.top - 150;
-                }
-                
-                menu.style.left = `${menuLeft}px`;
-                menu.style.top = `${menuTop}px`;
-                menu.style.display = 'block';
-                radar.appendChild(menu); // Append to radar instead of node
+                link.addEventListener('mouseout', () => {
+                    link.style.background = 'linear-gradient(to right, #8B4513, #A0522D)';
+                });
             });
             
-            radar.appendChild(node);
-            nodes.push({ 
-                element: node, 
-                menu,
-                info: { username, ip, password, device, status, uptime }
+            statItems.forEach(item => {
+                item.addEventListener('mouseover', () => {
+                    item.style.boxShadow = '0 5px 15px rgba(139, 69, 19, 0.4)';
+                });
+                
+                item.addEventListener('mouseout', () => {
+                    item.style.boxShadow = 'none';
+                });
             });
             
-            // Randomly report problems for this node
-            if (Math.random() > 0.5) {
-                setTimeout(() => {
-                    reportProblem(username, device);
-                }, Math.random() * 10000);
-            }
-            
-            return node;
-        }
-        
-        function generatePassword() {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%^&*';
-            let password = '';
-            for (let i = 0; i < 12; i++) {
-                password += chars[Math.floor(Math.random() * chars.length)];
-            }
-            return password;
-        }
-        
-        function closeAllMenus() {
-            nodes.forEach(node => {
-                if (node.menu) {
-                    node.menu.style.display = 'none';
-                }
-            });
-        }
-        
-        function banNode(button) {
-            const menu = button.closest('.node-menu');
-            const node = nodes.find(n => n.menu === menu)?.element;
-            
-            if (node) {
-                node.style.backgroundColor = '#f00';
-                setTimeout(() => {
-                    node.style.display = 'none';
-                }, 1000);
-                
-                bansCount++;
-                addChatMessage("SYSTEM", `Node ${menu.querySelector('.node-info').textContent.match(/IP: (\d+\.\d+\.\d+\.\d+)/)[1]} has been BANNED from network`, true);
-                
-                // Escalate panic based on bans count
-                if (bansCount === 3) {
-                    startQuestions();
-                } else if (bansCount > 3) {
-                    increasePanic();
-                }
-            }
-        }
-        
-        function kickNode(button) {
-            const menu = button.closest('.node-menu');
-            const node = nodes.find(n => n.menu === menu)?.element;
-            
-            if (node) {
-                node.style.backgroundColor = '#ff0';
-                setTimeout(() => {
-                    const x = Math.random() * 90 + 5;
-                    const y = Math.random() * 90 + 5;
-                    node.style.left = `${x}%`;
-                    node.style.top = `${y}%`;
-                    node.style.backgroundColor = '#0f0';
-                }, 1000);
-                addChatMessage("SYSTEM", `Node ${menu.querySelector('.node-info').textContent.match(/IP: (\d+\.\d+\.\d+\.\d+)/)[1]} has been KICKED to new location`, true);
-            }
-        }
-        
-        function closeMenu(button) {
-            button.closest('.node-menu').style.display = 'none';
-        }
-        
-        // ===== CHAT SYSTEM =====
-        function reportProblem(user, device) {
-            const problemIndex = Math.floor(Math.random() * problems.length);
-            const problem = problems[problemIndex];
-            const isCaps = Math.random() > 0.7;
-            const isError = Math.random() > 0.7;
-            const isRussian = problemIndex >= 20; // Russian problems start from index 20
-            
-            // In panic mode, increase chance of caps and errors
-            const panicModifier = isPanicMode ? 0.3 : 0;
-            
-            let message = `${user}: ${device} - ${problem}`;
-            if (isCaps || (isPanicMode && Math.random() > 0.7 - panicModifier)) {
-                message = message.toUpperCase();
-            }
-            
-            addChatMessage(user, `${device} - ${problem}`, 
-                         isError || (isPanicMode && Math.random() > 0.7 - panicModifier), 
-                         isCaps, 
-                         isRussian);
-            
-            // Schedule next problem
-            if (Math.random() > 0.3) {
-                setTimeout(() => {
-                    reportProblem(user, device);
-                }, Math.random() * (isPanicMode ? 5000 : 15000) + 5000);
-            }
-        }
-        
-        function addChatMessage(user, message, isError = false, isCaps = false, isRussian = false) {
-            const chat = document.getElementById('chat-messages');
-            const msgElement = document.createElement('div');
-            
-            let className = 'chat-message';
-            if (isError) className += ' error';
-            if (isCaps) className += ' caps';
-            if (isRussian) className += ' russian';
-            if (isPanicMode && Math.random() > 0.7) className += ' panic';
-            
-            msgElement.className = className;
-            msgElement.textContent = `[${new Date().toLocaleTimeString()}] ${user}: ${message}`;
-            chat.appendChild(msgElement);
-            chat.scrollTop = chat.scrollHeight;
-        }
-        
-        // ===== PANIC MECHANICS =====
-        function startQuestions() {
-            addChatMessage("SYSTEM", "WARNING: Multiple nodes banned", true, true);
-            addChatMessage("UNKNOWN", "Hey, what's going on there?", false, false);
-            
-            setTimeout(() => {
-                addChatMessage("Agent_K", "Why are you banning nodes?", false, Math.random() > 0.5);
-                addChatMessage("Ghost", "Это какие-то проблемы с сетью?", false, false, true);
-                
-                // Start panic mode with low intensity
-                isPanicMode = true;
-                panicLevel = 1;
-            }, 2000);
-        }
-        
-        function increasePanic() {
-            panicLevel = Math.min(panicLevel + 1, 5);
-            
-            const panicMessages = [
-                "SYSTEM ALERT: Network instability detected",
-                "WARNING: Security protocols compromised",
-                "EMERGENCY: Multiple nodes offline",
-                "CRITICAL FAILURE: Firewall breach",
-                "FATAL ERROR: System integrity at risk"
-            ];
-            
-            const userReactions = [
-                "What the hell is happening?!",
-                "Мы все умрём! Система рушится!",
-                "WHO IS BANNING ALL THESE NODES?",
-                "Это атака? Кто-нибудь знает что происходит?",
-                "ABANDON SHIP! REPEAT: ABANDON SHIP!",
-                "Всем покинуть систему немедленно!",
-                "I'm losing control of my nodes!",
-                "Мои устройства отключаются один за другим!",
-                "THIS IS NOT A DRILL! SYSTEM FAILURE IMMINENT!",
-                "Кто-нибудь вызовите админа, быстро!"
-            ];
-            
-            // Add system panic message
-            addChatMessage("SYSTEM", panicMessages[Math.min(panicLevel-1, panicMessages.length-1)], true, true);
-            
-            // Add random user panic messages
-            const numMessages = 2 + Math.floor(Math.random() * panicLevel);
-            for (let i = 0; i < numMessages; i++) {
-                setTimeout(() => {
-                    const randomUser = users[Math.floor(Math.random() * users.length)];
-                    const randomMessage = userReactions[Math.floor(Math.random() * userReactions.length)];
-                    const isRussian = randomMessage.match(/[А-Яа-я]/);
-                    addChatMessage(randomUser, randomMessage, true, Math.random() > 0.5, isRussian);
-                }, i * 1500);
-            }
-            
-            // In high panic, start randomly banning nodes
-            if (panicLevel >= 3) {
-                const nodesToBan = Math.floor(Math.random() * panicLevel / 2);
-                for (let i = 0; i < nodesToBan; i++) {
-                    setTimeout(() => {
-                        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-                        if (randomNode && randomNode.element.style.display !== 'none') {
-                            randomNode.element.style.backgroundColor = '#f00';
-                            setTimeout(() => {
-                                randomNode.element.style.display = 'none';
-                            }, 1000);
-                            addChatMessage("SYSTEM", `Node ${randomNode.info.ip} disconnected unexpectedly`, true);
-                        }
-                    }, i * 3000);
-                }
-            }
-        }
-        
-        // ===== SYSTEM START =====
-        function startSystem() {
-            // Create initial nodes
-            for (let i = 0; i < 15; i++) { // Start with fewer nodes for calmer beginning
-                createNode();
-            }
-            
-            // Add calm system messages
-            setTimeout(() => {
-                addChatMessage("SYSTEM", "Initializing DarkNet Monitoring System...", false, true);
-                addChatMessage("SYSTEM", "Scanning network for nodes...", false, true);
-                addChatMessage("SYSTEM", `Connected to ${nodes.length} nodes`, false, true);
-                addChatMessage("SYSTEM", "All systems nominal", false, false);
-                addChatMessage("SYSTEM", "Monitoring network for device failures...", false, true);
-                
-                // Add some initial problem reports (less frequent at start)
-                setTimeout(() => {
-                    for (let i = 0; i < 3; i++) {
-                        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-                        if (randomNode) {
-                            setTimeout(() => {
-                                reportProblem(randomNode.info.username, randomNode.info.device);
-                            }, i * 8000);
-                        }
+            // Animate stats counting
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target;
+                        const finalValue = target.textContent;
+                        const duration = 2000;
+                        const steps = 60;
+                        const stepValue = parseInt(finalValue) / steps;
+                        let current = 0;
+                        
+                        const timer = setInterval(() => {
+                            current += stepValue;
+                            if (current >= parseInt(finalValue)) {
+                                target.textContent = finalValue;
+                                clearInterval(timer);
+                            } else {
+                                target.textContent = Math.round(current);
+                            }
+                        }, duration / steps);
+                        
+                        observer.unobserve(target);
                     }
-                }, 3000);
-            }, 1000);
+                });
+            }, { threshold: 0.5 });
             
-            // Periodically add new nodes (slower at start)
-            setInterval(() => {
-                if (nodes.length < (isPanicMode ? 50 : 30) && Math.random() > 0.7) {
-                    createNode();
-                    addChatMessage("SYSTEM", `New node detected. Total nodes: ${nodes.length}`, false, true);
-                }
-            }, isPanicMode ? 3000 : 7000);
-            
-            // Add random system alerts (calmer at start)
-            setInterval(() => {
-                if (Math.random() > (isPanicMode ? 0.6 : 0.8)) {
-                    const alerts = [
-                        "Network scan in progress",
-                        "Routine security check",
-                        "Performing system diagnostics",
-                        "Checking node connectivity",
-                        "Verifying firewall integrity",
-                        // More intense alerts that appear only in panic mode
-                        ...(isPanicMode ? [
-                            "Network intrusion detected in sector 4",
-                            "Unusual traffic patterns detected",
-                            "Security audit in progress",
-                            "Backup system activated",
-                            "Firewall rules updated",
-                            "New firmware available for 12 devices",
-                            "Suspicious activity reported",
-                            "Emergency protocols initiated",
-                            "Data breach alert: sector 7",
-                            "Authentication server overload"
-                        ] : [])
-                    ];
-                    const alert = alerts[Math.floor(Math.random() * alerts.length)];
-                    addChatMessage("SECURITY", alert, isPanicMode, Math.random() > 0.5);
-                }
-            }, isPanicMode ? 5000 : 15000);
-        }
-        
-        // ===== SECURITY =====
-        // Disable context menu
-        document.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            addChatMessage("SECURITY", "Unauthorized access attempt blocked", true);
+            statNumbers.forEach(stat => {
+                observer.observe(stat);
+            });
         });
-        
-        // Disable F12 and Ctrl+Shift+I
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || 
-                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-                (e.ctrlKey && e.shiftKey && e.key === 'J')) {
-                e.preventDefault();
-                addChatMessage("SECURITY", "Developer tools access denied", true);
-            }
-        });
-        
-        // Close menu when clicking elsewhere
-        document.addEventListener('click', closeAllMenus);
-        
-        // Start the system
-        window.onload = initSystem;
     </script>
 </body>
 </html>
